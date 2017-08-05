@@ -1,5 +1,6 @@
 package com.pluralsight;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,5 +26,15 @@ public class BookDao {
         book2.setIsbn("2345");
         book2.setPublished(new Date());
 
+        books.put(book1.getId(), book1);
+        books.put(book2.getId(), book2);
+    }
+
+    Collection<Book> getBooks(){
+        return books.values();
+    }
+
+    Book getBook(String id){
+        return books.get(id);
     }
 }
