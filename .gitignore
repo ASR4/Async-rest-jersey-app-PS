@@ -1,1 +1,8 @@
 *.xml
+*.class
+*.txt
+.idea/workspace.xml
+*.iml
+*.xml
+.idea/workspace.xml
+*.iml
