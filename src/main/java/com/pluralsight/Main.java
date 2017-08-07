@@ -27,7 +27,7 @@ public class Main {
 
         // create a resource config that scans for JAX-RS resources and providers
         // in com.pluralsight package
-
+/*
         //Added register() to bind the BookDao instance so that it can be used
         //by Jersey's HK2 framework to inject, a custom object in the resource class
         //and hence avoiding the Spring DI
@@ -37,6 +37,8 @@ public class Main {
                         bind(dao).to(BookDao.class);
                     }
                 });
+*/
+        final ResourceConfig rc = new BookApplication(dao);
 
         // create and start a new instance of grizzly http server
         // exposing the Jersey application at BASE_URI
