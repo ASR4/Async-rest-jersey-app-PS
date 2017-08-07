@@ -22,9 +22,9 @@ public class BookResourceTest extends JerseyTest{
      */
     protected Application configure() {
         //Logs http response headers
-        enable(TestProperties.LOG_TRAFFIC);
+        //enable(TestProperties.LOG_TRAFFIC);
         //Logs Http response body (in this case the json body)
-        enable(TestProperties.DUMP_ENTITY);
+        //enable(TestProperties.DUMP_ENTITY);
 
         final BookDao dao = new BookDao();
         //Same job as the ResourceConfig in  Main class
