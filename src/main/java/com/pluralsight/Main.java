@@ -1,6 +1,7 @@
 package com.pluralsight;
 
 import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
@@ -12,6 +13,7 @@ import java.net.URI;
  *
  */
 public class Main {
+
     // Base URI the Grizzly HTTP server will listen on
     public static final String BASE_URI = "http://localhost:8080/myapp/";
 
@@ -20,9 +22,21 @@ public class Main {
      * @return Grizzly HTTP server.
      */
     public static HttpServer startServer() {
+        //To use the instance in the binder
+        final BookDao dao = new BookDao();
+
         // create a resource config that scans for JAX-RS resources and providers
         // in com.pluralsight package
-        final ResourceConfig rc = new ResourceConfig().packages("com.pluralsight");
+
+        //Added register() to bind the BookDao instance so that it can be used
+        //by Jersey's HK2 framework to inject, a custom object in the resource class
+        //and hence avoiding the Spring DI
+        final ResourceConfig rc = new ResourceConfig().packages("com.pluralsight").
+                register(new AbstractBinder() {
+                    protected void configure() {
+                        bind(dao).to(BookDao.class);
+                    }
+                });
 
         // create and start a new instance of grizzly http server
         // exposing the Jersey application at BASE_URI

@@ -10,7 +10,7 @@ public class BookDao {
     private Map<String, Book> books;
 
     BookDao(){
-        books = new HashMap<String, Book>();
+        books = new HashMap<>();
 
         Book book1 = new Book();
         book1.setId("1");
