@@ -1,9 +1,13 @@
 package com.pluralsight;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import org.glassfish.jersey.server.ManagedAsync;
+
+import javax.ws.rs.*;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.Collection;
@@ -22,14 +26,61 @@ public class BookResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Collection<Book> getBooks(){
-        return dao.getBooks();
+    @ManagedAsync
+    public void getBooks(@Suspended final AsyncResponse response){
+       // response.resume(dao.getBooks());
+        ListenableFuture< Collection<Book>> bookFuture = dao.getBooksAsync();
+        Futures.addCallback(bookFuture, new FutureCallback< Collection<Book>>() {
+            @Override
+            public void onSuccess( Collection<Book> addedBook) {
+                response.resume(addedBook);
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                response.resume(throwable);
+            }
+        });
     }
 
     @Path("/{id}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Book getBook(@PathParam("id") String id){
-        return dao.getBook(id);
+    @ManagedAsync
+    public void getBook(@PathParam("id") String id, @Suspended final AsyncResponse response){
+        //response.resume(dao.getBook(id));
+        ListenableFuture<Book> bookFuture = dao.getBookAsync(id);
+        Futures.addCallback(bookFuture, new FutureCallback<Book>() {
+            @Override
+            public void onSuccess(Book addedBook) {
+                response.resume(addedBook);
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                response.resume(throwable);
+            }
+        });
     }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ManagedAsync
+    public void addBook(Book book, @Suspended final AsyncResponse response) {
+        //response.resume(dao.addBook(book));
+        ListenableFuture<Book> bookFuture = dao.addBookAsync(book);
+        Futures.addCallback(bookFuture, new FutureCallback<Book>() {
+            @Override
+            public void onSuccess(Book addedBook) {
+                response.resume(addedBook);
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                response.resume(throwable);
+            }
+        });
+    }
+
  }
