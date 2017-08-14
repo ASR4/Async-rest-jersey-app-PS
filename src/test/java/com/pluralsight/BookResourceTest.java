@@ -3,6 +3,7 @@ package com.pluralsight;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
+import org.glassfish.jersey.test.TestProperties;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,6 +17,7 @@ import javax.ws.rs.core.Response;
 import java.util.Collection;
 import java.util.Date;
 
+import static java.lang.System.in;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -31,9 +33,9 @@ public class BookResourceTest extends JerseyTest{
      */
     protected Application configure() {
         //Logs http response headers
-        //enable(TestProperties.LOG_TRAFFIC);
+        enable(TestProperties.LOG_TRAFFIC);
         //Logs Http response body (in this case the json body)
-        //enable(TestProperties.DUMP_ENTITY);
+        enable(TestProperties.DUMP_ENTITY);
 
 //        final BookDao dao = new BookDao();
 //        //Same job as the ResourceConfig in  Main class
