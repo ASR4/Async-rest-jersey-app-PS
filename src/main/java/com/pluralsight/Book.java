@@ -1,7 +1,13 @@
 package com.pluralsight;
 
-import java.util.Date;
+import com.fasterxml.jackson.annotation.*;
 
+import java.util.Date;
+import java.util.HashMap;
+
+@JsonPropertyOrder({"id"})
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Book {
 
     private String title;
@@ -9,6 +15,8 @@ public class Book {
     private String isbn;
     private Date published;
     private String id;
+
+    private HashMap<String, Object> extras = new HashMap<String, Object>();
 
     public String getTitle() {
         return title;
@@ -49,5 +57,15 @@ public class Book {
     public void setId(String id) {
         this.id = id;
     }
-    
+
+    //Getter and setter to store/retrieve extra parameters from map
+    @JsonAnyGetter
+    public HashMap<String, Object> getExtras() {
+        return extras;
+    }
+
+    @JsonAnySetter
+    public void set(String key, Object value) {
+        this.extras.put(key, value);
+    }
 }
