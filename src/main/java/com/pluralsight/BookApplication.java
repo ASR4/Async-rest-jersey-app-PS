@@ -15,7 +15,8 @@ public class BookApplication extends ResourceConfig{
 
         //Creating a new jackson object and configuring it with desirables
         JacksonJsonProvider json = new JacksonJsonProvider().
-                configure(SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false);
+                configure(SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false).
+                configure(SerializationFeature.INDENT_OUTPUT, true);
 
         //packages to scan
         packages("com.pluralsight");
