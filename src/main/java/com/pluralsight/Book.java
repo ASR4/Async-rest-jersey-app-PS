@@ -1,13 +1,17 @@
 package com.pluralsight;
 
 import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Date;
 import java.util.HashMap;
 
 @JsonPropertyOrder({"id"})
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JacksonXmlRootElement(localName= "book")
 public class Book {
 
     private String title;
@@ -50,6 +54,7 @@ public class Book {
         this.published = published;
     }
 
+    @JacksonXmlProperty(isAttribute = true)
     public String getId() {
         return id;
     }
@@ -58,7 +63,7 @@ public class Book {
         this.id = id;
     }
 
-    //Getter and setter to store/retrieve extra parameters from map
+    //Getter and setter to store/retrieve extra parameters(eg: in post body) in map
     @JsonAnyGetter
     public HashMap<String, Object> getExtras() {
         return extras;

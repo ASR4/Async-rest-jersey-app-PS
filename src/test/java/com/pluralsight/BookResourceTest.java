@@ -14,6 +14,8 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -52,12 +54,9 @@ public class BookResourceTest extends JerseyTest{
     }
 
     //Method to add books in DAL to be used for testing
+    //converted from Book object to hasMap<String, Book> to make it more generic, so that various key value
+    //can be added and not just things defined in the Book class (this is for testing only)
     protected Response addBook(String author, String title, Date published, String isbn, String... extras) {
-//        Book book = new Book();
-//        book.setAuthor(author);
-//        book.setTitle(title);
-//        book.setPublished(published);
-//        book.setIsbn(isbn);
         HashMap<String, Object> book = new HashMap<String, Object>();
         book.put("author", author);
         book.put("title", title);
@@ -69,43 +68,49 @@ public class BookResourceTest extends JerseyTest{
                 book.put("extra" + count++, s);
             }
         }
-        //Entity<Book> bookEntity = Entity.entity(book, MediaType.APPLICATION_JSON_TYPE);
         Entity< HashMap<String, Object>> bookEntity = Entity.entity(book, MediaType.APPLICATION_JSON_TYPE);
         return target("books").request().post(bookEntity);
     }
 
+    //method to convert response to hashmap
+    protected HashMap<String, Object> toHashMap(Response response) {
+        return (response.readEntity(new GenericType<HashMap<String, Object>>() {}));
+    }
+
     @Test
-    public void testAddBook() {
+    public void testAddBook() throws ParseException {
         Date thisDate = new Date();
 
         Response response = addBook("author", "title", thisDate,"5678");
         assertEquals(200, response.getStatus());
 
         //To map a generic jersey response object to a specific custom object response
-        Book responseBook = response.readEntity(Book.class);
-        assertNotNull(responseBook.getId());
-        assertEquals("title", responseBook.getTitle());
-        assertEquals("author", responseBook.getAuthor());
-        assertEquals(thisDate, responseBook.getPublished());
-        assertEquals("5678", responseBook.getIsbn());
+        HashMap<String, Object> responseBook = toHashMap(response);
+        assertNotNull(responseBook.get("id"));
+        assertEquals("title", responseBook.get("title"));
+        assertEquals("author", responseBook.get("author"));
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+        assertEquals(thisDate, dateFormat.parse(String.valueOf(responseBook.get("published"))));
+        assertEquals("5678", responseBook.get("isbn"));
 
     }
 
     @Before
     public void setupBooks() {
-        book1_id = addBook("author1", "title1", new Date(),"1234").readEntity(Book.class).getId();
-        book2_id = addBook("author2", "title2", new Date(),"2345").readEntity(Book.class).getId();
+        book1_id = (String)toHashMap(addBook("author1", "title1", new Date(),"1234")).get("id");
+        book2_id = (String)toHashMap(addBook("author2", "title2", new Date(),"2345")).get("id");
     }
 
     @Test
     public void testGetBook() {
-        Book response = target("books").path(book1_id).request().get(Book.class);
+        HashMap<String, Object> response = toHashMap(target("books").path(book1_id).request().get());
         assertNotNull(response);
     }
 
     @Test
     public void testGetBooks() {
-        Collection<Book> response = target("books").request().get(new GenericType<Collection<Book>>() {});
+        Collection<HashMap<String, Object>> response = target("books").request().get(new GenericType<Collection<HashMap<String, Object>>>() {});
         assertEquals(2, response.size());
     }
 
@@ -114,7 +119,7 @@ public class BookResourceTest extends JerseyTest{
         Response response = addBook("author", "title", new Date(), "1111", "hello world");
           assertEquals(200, response.getStatus());
 
-          HashMap<String, Object> book = response.readEntity(new GenericType<HashMap<String, Object>>() {});
+          HashMap<String, Object> book = toHashMap(response);
           assertNotNull(book.get("id"));
           assertEquals(book.get("extra1"), "hello world");
     }

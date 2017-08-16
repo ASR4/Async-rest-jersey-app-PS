@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.glassfish.jersey.server.ManagedAsync;
 
+import javax.print.attribute.standard.Media;
 import javax.ws.rs.*;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
@@ -25,7 +26,9 @@ public class BookResource {
 
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
+//    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    //to set json as default
+    @Produces({"application/json;qs=1", "application/xml;qs=0.5"})
     @ManagedAsync
     public void getBooks(@Suspended final AsyncResponse response){
        // response.resume(dao.getBooks());
@@ -45,7 +48,9 @@ public class BookResource {
 
     @Path("/{id}")
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
+//    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    //to set json as default
+    @Produces({"application/json;qs=1", "application/xml;qs=0.5"})
     @ManagedAsync
     public void getBook(@PathParam("id") String id, @Suspended final AsyncResponse response){
         //response.resume(dao.getBook(id));
@@ -69,7 +74,9 @@ public class BookResource {
     @ManagedAsync
     public void addBook(Book book, @Suspended final AsyncResponse response) {
         //response.resume(dao.addBook(book));
+        //async call through DAL using guava
         ListenableFuture<Book> bookFuture = dao.addBookAsync(book);
+        //async call by jersey
         Futures.addCallback(bookFuture, new FutureCallback<Book>() {
             @Override
             public void onSuccess(Book addedBook) {

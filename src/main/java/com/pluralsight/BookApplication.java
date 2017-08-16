@@ -3,6 +3,7 @@ package com.pluralsight;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.fasterxml.jackson.jaxrs.xml.JacksonXMLProvider;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 
@@ -15,7 +16,12 @@ public class BookApplication extends ResourceConfig{
 
         //Creating a new jackson object and configuring it with desirables
         JacksonJsonProvider json = new JacksonJsonProvider().
-                configure(SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS, false).
+                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false).
+                configure(SerializationFeature.INDENT_OUTPUT, true);
+
+        //Creating a jackson obkect for XML
+        JacksonXMLProvider xml = new JacksonXMLProvider().
+                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false).
                 configure(SerializationFeature.INDENT_OUTPUT, true);
 
         //packages to scan
@@ -31,5 +37,8 @@ public class BookApplication extends ResourceConfig{
 
         //registering json object as a bean
         register(json);
+
+        //registering xml object as a bean
+        register(xml);
     }
 }
