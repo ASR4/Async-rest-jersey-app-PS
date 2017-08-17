@@ -54,6 +54,10 @@ public class Book {
         this.published = published;
     }
 
+    //<book id="9bfdf67a-6493-4c3e-b407-f393ca02f24e">
+    //  <title>title1</title>
+    //  <author>author1</author>
+    //</book>
     @JacksonXmlProperty(isAttribute = true)
     public String getId() {
         return id;

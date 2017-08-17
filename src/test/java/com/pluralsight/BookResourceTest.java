@@ -1,5 +1,7 @@
 package com.pluralsight;
 
+import com.jcabi.xml.XML;
+import com.jcabi.xml.XMLDocument;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
@@ -122,6 +124,18 @@ public class BookResourceTest extends JerseyTest{
           HashMap<String, Object> book = toHashMap(response);
           assertNotNull(book.get("id"));
           assertEquals(book.get("extra1"), "hello world");
+    }
+
+    @Test
+    public void getBooksAsXml() {
+        String output = target("books").request(MediaType.APPLICATION_XML).get(String.class);
+        XML xml = new XMLDocument(output);
+
+        assertEquals("author1", xml.xpath("/books/book[@id='" + book1_id + "']/author/text()").get(0));
+        assertEquals("title1", xml.xpath("/books/book[@id='" + book1_id + "']/title/text()").get(0));
+
+        assertEquals(2, xml.xpath("//book/author/text()").size());
+
     }
 
 }
