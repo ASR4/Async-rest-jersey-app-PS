@@ -1,8 +1,11 @@
 package com.pluralsight;
 
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.jcabi.xml.XML;
 import com.jcabi.xml.XMLDocument;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
@@ -23,9 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 import static java.lang.System.in;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class BookResourceTest extends JerseyTest{
 
@@ -53,6 +54,15 @@ public class BookResourceTest extends JerseyTest{
 //                });
         final BookDao dao = new BookDao();
         return new BookApplication(dao);
+    }
+
+    //Client config to prevent jersey from filling null map values.
+    //Use case: to test @NotNull bean validation by passing null values in
+    //addBook method
+    protected void configureClient(ClientConfig clientConfig) {
+        JacksonJsonProvider json = new JacksonJsonProvider().
+                configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
+        clientConfig.register(json);
     }
 
     //Method to add books in DAL to be used for testing
@@ -135,7 +145,28 @@ public class BookResourceTest extends JerseyTest{
         assertEquals("title1", xml.xpath("/books/book[@id='" + book1_id + "']/title/text()").get(0));
 
         assertEquals(2, xml.xpath("//book/author/text()").size());
+    }
 
+    @Test
+    public void addBookNoAuthor() {
+        Response response = addBook(null, "title1", new Date(), "1234");
+        assertEquals(400, response.getStatus());
+        String message = response.readEntity(String.class);
+        assertTrue(message.contains("author is a required field"));
+    }
+
+    @Test
+    public void addBookNoTitle() {
+        Response response = addBook("author1", null, new Date(), "1234");
+        assertEquals(400, response.getStatus());
+        String message = response.readEntity(String.class);
+        assertTrue(message.contains("title is a required field"));
+    }
+
+    @Test
+    public void addBookNoBook() {
+        Response response = target("books").request().post(null);
+        assertEquals(400, response.getStatus());
     }
 
 }

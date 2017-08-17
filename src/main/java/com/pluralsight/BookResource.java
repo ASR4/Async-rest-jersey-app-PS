@@ -6,6 +6,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.glassfish.jersey.server.ManagedAsync;
 
 import javax.print.attribute.standard.Media;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
@@ -72,7 +74,7 @@ public class BookResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ManagedAsync
-    public void addBook(Book book, @Suspended final AsyncResponse response) {
+    public void addBook(@Valid @NotNull Book book, @Suspended final AsyncResponse response) {
         //response.resume(dao.addBook(book));
         //async call through DAL using guava
         ListenableFuture<Book> bookFuture = dao.addBookAsync(book);

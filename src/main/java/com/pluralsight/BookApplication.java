@@ -6,6 +6,7 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.fasterxml.jackson.jaxrs.xml.JacksonXMLProvider;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
 
 /**
  * Class to create and configure all the beans
@@ -40,5 +41,8 @@ public class BookApplication extends ResourceConfig{
 
         //registering xml object as a bean
         register(xml);
+
+        //For bean validation to be able to return message
+        property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
     }
 }
