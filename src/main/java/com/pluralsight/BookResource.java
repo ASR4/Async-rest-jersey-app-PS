@@ -3,6 +3,7 @@ package com.pluralsight;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.glassfish.jersey.server.ManagedAsync;
 
 import javax.print.attribute.standard.Media;
@@ -11,8 +12,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.*;
 import java.util.Collection;
 
 /**
@@ -25,6 +25,9 @@ public class BookResource {
     //BookDao dao = new BookDao();
     @Context
     BookDao dao;
+
+    @Context
+    Request request;
 
 
     @GET
@@ -60,10 +63,18 @@ public class BookResource {
         Futures.addCallback(bookFuture, new FutureCallback<Book>() {
             @Override
             public void onSuccess(Book addedBook) {
-                response.resume(addedBook);
+               // response.resume(addedBook);
+               // To check if the response has been changed (Conditional GET)
+               EntityTag entityTag = generateEntityTag(addedBook);
+               Response.ResponseBuilder rb = request.evaluatePreconditions(entityTag);
+               //If response has not changed
+               if (rb != null) {
+                   response.resume(rb.build());
+               //If response has been modified
+               } else {
+                   response.resume(Response.ok().tag(entityTag).entity(addedBook).build());
+               }
             }
-
-            @Override
             public void onFailure(Throwable throwable) {
                 response.resume(throwable);
             }
@@ -90,6 +101,12 @@ public class BookResource {
                 response.resume(throwable);
             }
         });
+    }
+
+    //For conditional Get, it is basically caching of the reponse, in a new entity.
+    EntityTag generateEntityTag(Book book) {
+        return new EntityTag(DigestUtils.md5Hex(book.getAuthor() +
+        book.getTitle() + book.getPublished() + book.getExtras()));
     }
 
  }
