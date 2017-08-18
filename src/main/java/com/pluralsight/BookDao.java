@@ -36,8 +36,12 @@ public class BookDao {
         return future;
     }
 
-    Book getBook(String id){
-        return books.get(id);
+    Book getBook(String id) throws BookNotFoundException {
+        if(books.containsKey(id)) {
+            return books.get(id);
+        } else {
+            throw new BookNotFoundException("Book " + id + " is not found");
+        }
     }
 
     //Asynchronus call of getBook using Guava
