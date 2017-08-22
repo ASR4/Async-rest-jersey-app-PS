@@ -81,6 +81,13 @@
             <version>1.9</version>
         </dependency>
 
+        <!-- Because patch does not work with normal JDK Http connector-->
+        <dependency>
+            <groupId>org.glassfish.jersey.connectors</groupId>
+            <artifactId>jersey-grizzly-connector</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

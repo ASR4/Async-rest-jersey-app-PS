@@ -31,7 +31,7 @@ public class BookResource {
 
 
     @GET
-//    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+//  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     //to set json as default
     @Produces({"application/json;qs=1", "application/xml;qs=0.5"})
     @ManagedAsync
@@ -51,9 +51,10 @@ public class BookResource {
         });
     }
 
+    //Conditional GET/Caching/Entity Tag
     @Path("/{id}")
     @GET
-//    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+//  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     //to set json as default
     @Produces({"application/json;qs=1", "application/xml;qs=0.5"})
     @ManagedAsync
@@ -101,6 +102,27 @@ public class BookResource {
             @Override
             public void onSuccess(Book addedBook) {
                 response.resume(addedBook);
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                response.resume(throwable);
+            }
+        });
+    }
+
+    //For PATCH annotation use case
+    @Path("/{id}")
+    @PATCH
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ManagedAsync
+    public void updateBook(@PathParam("id") String id, Book book, @Suspended final AsyncResponse response) {
+        ListenableFuture<Book> bookFuture = dao.updateBookAsync(id, book);
+        Futures.addCallback(bookFuture, new FutureCallback<Book>() {
+            @Override
+            public void onSuccess(Book updatedBook) {
+                response.resume(updatedBook);
             }
 
             @Override

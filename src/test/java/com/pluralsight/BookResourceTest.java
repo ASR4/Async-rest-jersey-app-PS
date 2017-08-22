@@ -6,6 +6,7 @@ import com.jcabi.xml.XML;
 import com.jcabi.xml.XMLDocument;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.grizzly.connector.GrizzlyConnectorProvider;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
@@ -60,6 +61,8 @@ public class BookResourceTest extends JerseyTest{
         JacksonJsonProvider json = new JacksonJsonProvider().
                 configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
         clientConfig.register(json);
+        //Adding grizzly connector (see pom) instead of default JDK http connector for PATCH to work
+        clientConfig.connectorProvider(new GrizzlyConnectorProvider());
     }
 
     //Method to add books in DAL to be used for testing
@@ -183,6 +186,38 @@ public class BookResourceTest extends JerseyTest{
         Response response = target("books").path(book1_id).request().header("If-None-Match", entityTag).get();
         //304 not modified
         assertEquals(304, response.getStatus());
+    }
+
+    @Test
+    public void UpdateBookAuthor() {
+        HashMap<String, Object> updates = new HashMap<String, Object>();
+        updates.put("author", "updatedAuthor");
+        Entity<HashMap<String, Object>> updateEntity = Entity.entity(updates, MediaType.APPLICATION_JSON);
+        //Since PATCH does not have a dedicated get() or post() method we use build().invoke()
+        Response updateResponse = target("books").path(book1_id).request().build("PATCH", updateEntity).invoke();
+
+        assertEquals(200, updateResponse.getStatus());
+
+        Response getResponse = target("books").path(book1_id).request().get();
+        HashMap<String, Object> getResponseMap = toHashMap(getResponse);
+
+        assertEquals("updatedAuthor", getResponseMap.get("author"));
+    }
+
+    @Test
+    public void UpdateBookExtra() {
+        HashMap<String, Object> updates = new HashMap<String, Object>();
+        updates.put("hello", "world");
+        Entity<HashMap<String, Object>> updateEntity = Entity.entity(updates, MediaType.APPLICATION_JSON);
+        //Since PATCH does not have a dedicated get() or post() method we use build().invoke()
+        Response updateResponse = target("books").path(book1_id).request().build("PATCH", updateEntity).invoke();
+
+        assertEquals(200, updateResponse.getStatus());
+
+        Response getResponse = target("books").path(book1_id).request().get();
+        HashMap<String, Object> getResponseMap = toHashMap(getResponse);
+
+        assertEquals("world", getResponseMap.get("hello"));
     }
 
 }
