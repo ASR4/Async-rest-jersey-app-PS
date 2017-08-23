@@ -178,13 +178,15 @@ public class BookResourceTest extends JerseyTest{
         assertTrue(message.contains("Book 1 is not found"));
     }
 
+    //Test for If-None-Match(if Etags don't match go to method else throw 304 not modified)/Conditional GET
     @Test
     public void BookEntityTagNotModified() {
+        //Client side Etag
         EntityTag entityTag = target("books").path(book1_id).request().get().getEntityTag();
         assertNotNull(entityTag);
 
         Response response = target("books").path(book1_id).request().header("If-None-Match", entityTag).get();
-        //304 not modified
+        //304 not modified, as the client and server side Etags match
         assertEquals(304, response.getStatus());
     }
 
@@ -204,6 +206,7 @@ public class BookResourceTest extends JerseyTest{
         assertEquals("updatedAuthor", getResponseMap.get("author"));
     }
 
+    //Test for PATCH with extra params(getting added by @JasonAnySetter)
     @Test
     public void UpdateBookExtra() {
         HashMap<String, Object> updates = new HashMap<String, Object>();
@@ -218,6 +221,30 @@ public class BookResourceTest extends JerseyTest{
         HashMap<String, Object> getResponseMap = toHashMap(getResponse);
 
         assertEquals("world", getResponseMap.get("hello"));
+    }
+
+    //Test for PATCH If-Match(if Etags match go to method else throw 412 Precondition failed)
+    @Test
+    public void UpdateIfMatch() {
+        //Create client side entityTag which is compared to the server side.
+        EntityTag entityTag = target("books").path(book1_id).request().get().getEntityTag();
+
+        HashMap<String, Object> updates = new HashMap<String, Object>();
+        updates.put("author", "updatedAuthor");
+        Entity<HashMap<String,Object>> updateEntity = Entity.entity(updates, MediaType.APPLICATION_JSON);
+        Response updateResponse = target("books").path(book1_id).request()
+                .header("If-Match", entityTag).build("PATCH", updateEntity).invoke();
+
+        //If-Match, does not fail as the Etags match and hence a new response is created with a different server side Etag
+        assertEquals(200, updateResponse.getStatus());
+
+        Response updateResponse2 = target("books").path(book1_id).request().
+                header("If-Match", entityTag).build("PATCH", updateEntity).invoke();
+
+        //Because a different server side Etag is there now as the book object has been updated,
+        //the If-Match fails and 412 is thrown
+        System.out.println(updateResponse2.getStatus());
+        assertEquals(412, updateResponse2.getStatus());
     }
 
 }

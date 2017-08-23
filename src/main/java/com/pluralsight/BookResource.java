@@ -51,7 +51,7 @@ public class BookResource {
         });
     }
 
-    //Conditional GET/Caching/Entity Tag
+    //Conditional GET(With If-None-Match support use case)/Caching/Entity Tag
     @Path("/{id}")
     @GET
 //  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -64,10 +64,11 @@ public class BookResource {
         ListenableFuture<Book> bookFuture = dao.getBookAsync(id);
         Futures.addCallback(bookFuture, new FutureCallback<Book>() {
             @Override
-            public void onSuccess(Book addedBook) {
+            public void onSuccess(Book book) {
                // response.resume(addedBook);
                // To check if the response has been changed (Conditional GET), generate a unique tag
-               EntityTag entityTag = generateEntityTag(addedBook);
+               // Server side Etag
+               EntityTag entityTag = generateEntityTag(book);
                 // the following method call will result in Jersey checking the headers of the
                 // incoming request, comparing them with the entity tag generated for
                 // the current version of the resource generates "304 Not Modified" response
@@ -75,12 +76,12 @@ public class BookResource {
                Response.ResponseBuilder rb = request.evaluatePreconditions(entityTag);
                //If response has not changed
                if (rb != null) {
-                   //304 not modified
+                   //304 not modified, so simply passing the response we got from DAL
                    response.resume(rb.build());
                //If response has been modified
                } else {
                    // return the current version of the resource with the corresponding tag
-                   response.resume(Response.ok().tag(entityTag).entity(addedBook).build());
+                   response.resume(Response.ok().tag(entityTag).entity(book).build());
                }
             }
             public void onFailure(Throwable throwable) {
@@ -111,25 +112,46 @@ public class BookResource {
         });
     }
 
-    //For PATCH annotation use case
+    //For PATCH annotation use case with If-Match support for PATCH
     @Path("/{id}")
     @PATCH
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ManagedAsync
-    public void updateBook(@PathParam("id") String id, Book book, @Suspended final AsyncResponse response) {
-        ListenableFuture<Book> bookFuture = dao.updateBookAsync(id, book);
-        Futures.addCallback(bookFuture, new FutureCallback<Book>() {
-            @Override
-            public void onSuccess(Book updatedBook) {
-                response.resume(updatedBook);
-            }
+    public void updateBook(@PathParam("id") final String id, final Book book, @Suspended final AsyncResponse response) {
 
+        //If-Match support similar to If-None-Match for Condition GET
+        //get method call to validate preconditions
+        ListenableFuture<Book> getBookFuture = dao.getBookAsync(id);
+        Futures.addCallback(getBookFuture, new FutureCallback<Book>() {
+            @Override
+            public void onSuccess(Book originalBook) {
+                Response.ResponseBuilder rb = request.evaluatePreconditions(generateEntityTag(originalBook));
+                //pre condition failed 412, so simply passing the response we got from DAL
+                if(rb != null){
+                    response.resume(rb.build());
+                } else {
+                    ListenableFuture<Book> bookFuture = dao.updateBookAsync(id, book);
+                    Futures.addCallback(bookFuture, new FutureCallback<Book>() {
+                        @Override
+                        public void onSuccess(Book updatedBook) {
+                            response.resume(updatedBook);
+                        }
+
+                        @Override
+                        public void onFailure(Throwable throwable) {
+                            response.resume(throwable);
+                        }
+                    });
+                }
+            }
             @Override
             public void onFailure(Throwable throwable) {
                 response.resume(throwable);
             }
         });
+
+
     }
 
     //For conditional Get, it is basically caching of the response, in a new entity.
