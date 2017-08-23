@@ -7,6 +7,7 @@ import com.fasterxml.jackson.jaxrs.xml.JacksonXMLProvider;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
+import org.glassfish.jersey.server.filter.HttpMethodOverrideFilter;
 
 /**
  * Class to create and configure all the beans
@@ -44,5 +45,9 @@ public class BookApplication extends ResourceConfig{
 
         //For bean validation to be able to return message
         property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
+
+        //To register Http Overide filter (This overloads the POST endpoint
+        //with less used verbs like DELETE and PUT)
+        register(HttpMethodOverrideFilter.class);
     }
 }

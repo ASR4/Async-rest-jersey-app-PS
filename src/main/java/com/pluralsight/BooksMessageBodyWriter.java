@@ -37,6 +37,7 @@ public class BooksMessageBodyWriter implements MessageBodyWriter<Collection<Book
     @JacksonXmlRootElement(localName = "books")
     public class BooksWrapper{
 
+        //False cause we are using an actual class(above) to do the wrapping
         @JacksonXmlElementWrapper(useWrapping = false)
         @JacksonXmlProperty(localName = "book")
         public Collection<Book> books;
@@ -46,7 +47,7 @@ public class BooksMessageBodyWriter implements MessageBodyWriter<Collection<Book
         }
     }
 
-    //Gives acess to all the provders configured in this application
+    //Gives access to all the providers configured in this application
     @Context
     Providers providers;
 
@@ -54,7 +55,8 @@ public class BooksMessageBodyWriter implements MessageBodyWriter<Collection<Book
     public boolean isWriteable(Class<?> type, Type genericType,
                                Annotation[] annotations, MediaType mediaType) {
 
-        //Use this message writer if the class type is collection
+        //Use this message writer if the class type is collection(because only one resource
+        //method getBooks will be used in this scenario)
         return Collection.class.isAssignableFrom(type);
     }
 

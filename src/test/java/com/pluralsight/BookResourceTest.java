@@ -247,4 +247,22 @@ public class BookResourceTest extends JerseyTest{
         assertEquals(412, updateResponse2.getStatus());
     }
 
+    //Test for Http Override Filter on the Patch request
+    @Test
+    public void PatchMethodOverride() {
+        HashMap<String, Object> updates = new HashMap<String, Object>();
+        updates.put("author", "updateAuthor");
+        Entity<HashMap<String, Object>> updateEntity = Entity.entity(updates, MediaType.APPLICATION_JSON);
+        //The Http Override Filter registered in BookApplication sees queryParam("_method","PATCH")
+        // and tells the request to use the PATCH annotated resource method
+        Response updateResponse = target("books").path(book1_id).queryParam("_method", "PATCH").
+                request().post(updateEntity);
+
+        assertEquals(200, updateResponse.getStatus());
+
+        Response getResponse = target("books").path(book1_id).request().get();
+        HashMap<String, Object> getResponseMap = toHashMap(getResponse);
+
+        assertEquals("updateAuthor", getResponseMap.get("author"));
+    }
 }
