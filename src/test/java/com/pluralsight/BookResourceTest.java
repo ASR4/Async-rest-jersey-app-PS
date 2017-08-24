@@ -265,4 +265,22 @@ public class BookResourceTest extends JerseyTest{
 
         assertEquals("updateAuthor", getResponseMap.get("author"));
     }
+
+    //Test for Uri Filter
+    @Test
+    public void ContentNegotiationExtensions() {
+        Response xmlResponse = target("books").path(book1_id + ".xml").request().get();
+        assertEquals(MediaType.APPLICATION_XML, xmlResponse.getHeaderString("Content-Type"));
+
+        Response jsonResponse = target("books").path(book1_id + ".json").request().get();
+        assertEquals(MediaType.APPLICATION_JSON, jsonResponse.getHeaderString("Content-Type"));
+
+    }
+
+    //To test custom response filter
+    @Test
+    public void PoweredByHeader() {
+        Response response = target("books").path(book1_id).request().get();
+        assertEquals("Pluralsight", response.getHeaderString("X-Powered-By"));
+    }
 }
