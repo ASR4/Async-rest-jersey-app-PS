@@ -282,5 +282,11 @@ public class BookResourceTest extends JerseyTest{
     public void PoweredByHeader() {
         Response response = target("books").path(book1_id).request().get();
         assertEquals("Pluralsight", response.getHeaderString("X-Powered-By"));
+
+        //Test for name binding partial filter test
+        Response response2 = target("books").request().get();
+        //This is giving null as only the getBook() method in resource file has the
+        //@PoweredBy annotation and thus only response from getBook() method will have the "X-Powered-By" header
+        assertNull(response2.getHeaderString("X-Powered-By"));
     }
 }

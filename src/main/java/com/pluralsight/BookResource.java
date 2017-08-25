@@ -52,6 +52,9 @@ public class BookResource {
     }
 
     //Conditional GET(With If-None-Match support use case)/Caching/Entity Tag
+
+    //This annotation for name binding annotation (see PoweredBy and PoweredByFilter)
+    @PoweredBy("Pluralsight")
     @Path("/{id}")
     @GET
 //  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})

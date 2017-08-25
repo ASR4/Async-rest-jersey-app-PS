@@ -7,7 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Interface to create custom annotations like GET, POSt etc
+ * Interface to create custom verb annotations like GET, POST etc
+ * In this case we use use PATCH annotation for making partial updates
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
